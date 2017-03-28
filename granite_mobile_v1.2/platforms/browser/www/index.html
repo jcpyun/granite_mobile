@@ -57,6 +57,24 @@
     
     <div class="app">
         <div id='map'></div>
+        Full name: <input id="inputName" type="text" name="FirstName" placeholder="Full name please"><br>
+                         <!--<input type="text" name="LastName" value="Mouse"><br>-->
+                        Phone type:
+                        <select id="phoneType">
+                        <option value="null">---------</option>
+                        <option value="android">Android</option>
+                        <option value="ios">iOS</option>
+                        <option value="others">Others</option>
+                        </select></br>
+                        Browser type:
+                        <select id="browserType">
+                        <option value="null">---------</option>
+                        <option value="chrome">Chrome</option>
+                        <option value="safari">Safari</option>
+                        <option value="others">Others</option>
+                        </select>
+                        </br>
+                        <button class="button1" onClick="ajaxinitializer();">START</button>
     </div>
 
 
@@ -65,14 +83,13 @@
     <script type="text/javascript" src="cordova.js"></script>
     <!--<script type="text/javascript" src="js/index.js"></script>-->
      <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
       <script>
       var map = L.map('map').fitWorld();
 
 	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
 		maxZoom: 18,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		
 		id: 'mapbox.streets'
 	}).addTo(map);
 
@@ -93,6 +110,44 @@
 	map.on('locationerror', onLocationError);
 
 	map.locate({setView: true, maxZoom: 16});
+      </script>
+      <script>
+function ajaxinitializer(){
+    var inputName= document.getElementById('inputName').value;
+    var e = document.getElementById('phoneType');
+    var phoneType = e.options[e.selectedIndex].value;
+    var b = document.getElementById('browserType');
+    var browserType = b.options[b.selectedIndex].value;
+   
+   var data= {
+    'user':inputName,
+    'firstname':phoneType,
+    'lastname':browserType,
+    'committee':"Officer",
+    'phone':"123",
+    'email':"wow@gmail.com",
+    'latitude':0,
+    'longitude':0,
+    // csrfmiddlewaretoken: '{{ csrf_token }}',
+   }
+     $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": "http://www.jcpyun.com/scc_test/",
+                "data": data,
+                
+                "success": function(result) {
+                    console.log(result);
+                    console.log("initialized!");
+                },
+                "error": function(error){
+                    console.log(error);
+                    alert("FUCK IT DIDNT INITIALIZE");
+                    // console.log(error.message)
+                    console.log(data);
+                }
+    });
+}
       </script>
     <script type="text/javascript">
         // app.initialize();
