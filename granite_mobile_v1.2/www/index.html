@@ -208,7 +208,7 @@ function signupUser(fromthe){
             });
 }
 function taskRetriever(){
-     window.setInterval(ajaxGetTask, 1000);
+     window.setInterval(ajaxGetTask, 5000);
 }
 function ajaxGetTask(){
     $.ajax({
@@ -289,6 +289,7 @@ var browserGeolocationFail = function(error) {
 
 
  var onSuccess = function(position) {
+    //  console.log(position.timestamp);///// attempt
      ajaxGPSUpdate(currentUserId,position.coords.latitude,position.coords.longitude)
    if (circle1==undefined)
    {
