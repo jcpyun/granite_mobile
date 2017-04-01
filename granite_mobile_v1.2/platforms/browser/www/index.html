@@ -121,6 +121,7 @@
                         <div id="lat"></div>
                             <div id="lng"></div>-->
         </div>
+        <div id="console"></div>
     </div>
 
 
@@ -132,6 +133,14 @@
      <script src='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.js'></script>
      <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
       <script>
+navigator.geolocation.getCurrentPosition(initsuccess,initerror);
+function initsuccess(){
+     map.setView([position.coords.latitude,position.coords.longitude], 17);
+}
+function initerror(){
+    document.getElementById("console").innerHTML="error initialized";
+
+}
 L.mapbox.accessToken = 'pk.eyJ1IjoiamNweXVuIiwiYSI6ImNpdXEwdDE3MzAxd3oydnBlcGxidWc4YnoifQ.9ulCGrjVSrgFz4Ou_4jG7w';
     //   var map = L.map('map').fitWorld();
 
@@ -144,7 +153,8 @@ map.setMaxBounds([[84.67351256610522, -174.0234375], [-58.995311187950925, 223.2
 
 L.mapbox.styleLayer('mapbox://styles/mapbox/dark-v9').addTo(map); 
 var target_marker = L.marker(map.getCenter()); //// this is the marker target
-
+var circle1;
+var circle2;
       </script>
       <script>
 var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Andrew ID: ALL LOWER CASE"><br>'
@@ -159,6 +169,7 @@ else{
 var currentUserId=""
 
 function signin(){
+     locationFinder();
     currentUserId=document.getElementById('inputName').value.toLowerCase();
     document.getElementById("userID").innerHTML=currentUserId;
     document.getElementById("bottom").innerHTML='<div class="status"></div>'
@@ -258,14 +269,6 @@ function locationFinder(){
   }
 }
 
-function updateLocationFinder(){
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition( onUpdateSuccess,
-      browserGeolocationFail,
-      {maximumAge: 50000, timeout: 20000, enableHighAccuracy: true});
-
-  }
-}
 
 var browserGeolocationFail = function(error) {
   switch (error.code) {
@@ -274,7 +277,7 @@ var browserGeolocationFail = function(error) {
       break;
     case error.PERMISSION_DENIED:
       if(error.message.indexOf("Only secure origins are allowed") == 0) {
-        tryAPIGeolocation();
+        // tryAPIGeolocation();
       }
       break;
     case error.POSITION_UNAVAILABLE:
@@ -283,166 +286,102 @@ var browserGeolocationFail = function(error) {
       break;
   }
 };
- var onUpdateSuccess = function(position) {
-    map.setView([position.coords.latitude,position.coords.longitude], 17)
-     document.getElementById("lat").innerHTML+="</br>"+position.coords.latitude;
-     document.getElementById("lat").innerHTML+="</br>"+position.coords.longitude;
-    var locator=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#ff0000',
-                    radius:2,
-                }).addTo(map);
-    var locator2=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#ff0000',
-                    radius:4,
-                }).addTo(map);
-    var locator3=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#ff0000',
-                    radius:6,
-                }).addTo(map);
-               
-    // ajaxlocation(document.getElementById('inputName').value,position.coords.latitude,position.coords.longitude);
-    
- }
+
 
  var onSuccess = function(position) {
-      map.setView([position.coords.latitude,position.coords.longitude], 17)
-     document.getElementById("lat").innerHTML+="</br>"+position.coords.latitude;
-     document.getElementById("lat").innerHTML+="</br>"+position.coords.longitude;
-    var locator=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#ff0000',
-                    radius:2,
-                }).addTo(map);
-    var locator2=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#ff0000',
-                    radius:4,
-                }).addTo(map);
-    var locator3=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#ff0000',
-                    radius:6,
-                }).addTo(map);
-    // ajaxlocation(document.getElementById('inputName').value,position.coords.latitude,position.coords.longitude);
+     ajaxGPSUpdate(currentUserId,position.coords.latitude,position.coords.longitude)
+   if (circle1==undefined)
+   {
+       circle1=L.circleMarker([position.coords.latitude,position.coords.longitude],{
+                    color:'#FFA500',
+                    fillColor:'#00ffff',
+                    fillOpacity:0.1,
+                    radius:8
+                });
+       circle2=L.circleMarker([position.coords.latitude,position.coords.longitude],{
+                    color:'#FFA500',
+                    radius:1
+                });
+                circle1.addTo(map);
+    circle2.addTo(map);
+   }
+   else{
+       circle1.setLatLng([position.coords.latitude,position.coords.longitude]);
+       circle2.setLatLng([position.coords.latitude,position.coords.longitude]);
+   }
  }
- function ajaxlocation(user,lat,lng){
-   var inputName= document.getElementById('inputName').value;
-   var orgselected = $('#orgoptions').find(":selected").text();
-   var data= {
-    'user':inputName,
-    'org':orgselected,
-    'latitude':0,
-    'longitude':0,
-    // csrfmiddlewaretoken: '{{ csrf_token }}',
+
+ function ajaxGPSUpdate(u,la,ln){
+    var data= {
+    'latitude':la,
+    'longitude':ln
    }
     $.ajax({
-                "type": "PUT",
+                "type": "PATCH",
                 "dataType": "json",
-                "url": "http://www.jcpyun.com/api/sccgps/create",
+                "url": "http://www.jcpyun.com/api/sccgps/"+u+"/update/",
                 "data": data,
-                
                 "success": function(result) {
-                    // console.log(result);
+                    // taskRetriever();
                 },
                 "error": function(error){
-                    // console.log(error);
-                    // console.log(data);
                 }
             });
-
 }
 
-    function onError(error) {
-        alert('code: '    + error.code    + '\n' +
-              'message: ' + error.message + '\n');
-    }
-
-    navigator.geolocation.getCurrentPosition(onSuccess, onError);
-
-
-
-
-
-
-function ajaxinitializer(){
-   var inputName= document.getElementById('inputName').value;
-   var orgselected = $('#orgoptions').find(":selected").text();
-   var data= {
-    'phone':inputName,
-    'org':orgselected,
-    'latitude':0,
-    'longitude':0,
-    // csrfmiddlewaretoken: '{{ csrf_token }}',
-   }
-     $.ajax({
-                "type": "POST",
-                "dataType": "json",
-                "url": "http://www.jcpyun.com/api/sccgps/create/",
-                "data": data,
-                
-                "success": function(result) {
-                    console.log(result);
-                    console.log("initialized!");
-                },
-                "error": function(error){
-                    console.log(error);
-                    alert("FUCK IT DIDNT INITIALIZE");
-                    // console.log(error.message)
-                    console.log(data);
-                }
-    });
-}
 
 
       </script>
     <script type="text/javascript">
         // app.initialize();
         // getCurrentLocation();
-         locationFinder();
-    </script>
-    <script>
-var sororitylist=["AXO","Alpha Phi","Tri Delta", "DG","Theta","KKG", ];
-var fraternitylist=["AEPi", "Alpha_Sig","DTD","Phi_Delt","SigEp",];
-var independentlist=["APO","ASA","Fringe","KGB","TSA"];
-var blitzlist=["Astro","Math","Sigma_Chi","SDC","AKPsi","CSA??","SOCE??","Kap_Sig"];
-orgselector="";
-orgselector+="<div class='soflow'>"
-orgselector+="<select id='orgoptions'>";
-orgselector+="<option selected disabled>Choose an org</option>" 
-orgselector+=" <optgroup label='Sororities'>";
-// orgselector+="<option disabled><b>--Sororities--</b></option>";
-for (var i=0;i<sororitylist.length;i++){
-    orgselector+="<option value="+sororitylist[i]+">"+sororitylist[i]+"</option>";
-}
-orgselector+="</optgroup>"
-orgselector+=" <optgroup label='Fraternities'>";
-for (var i=0;i<fraternitylist.length;i++){
-    orgselector+="<option value="+fraternitylist[i]+">"+fraternitylist[i]+"</option>";
-}
-orgselector+="</optgroup>"
+        
+    
+// var sororitylist=["AXO","Alpha Phi","Tri Delta", "DG","Theta","KKG", ];
+// var fraternitylist=["AEPi", "Alpha_Sig","DTD","Phi_Delt","SigEp",];
+// var independentlist=["APO","ASA","Fringe","KGB","TSA"];
+// var blitzlist=["Astro","Math","Sigma_Chi","SDC","AKPsi","CSA??","SOCE??","Kap_Sig"];
+// orgselector="";
+// orgselector+="<div class='soflow'>"
+// orgselector+="<select id='orgoptions'>";
+// orgselector+="<option selected disabled>Choose an org</option>" 
+// orgselector+=" <optgroup label='Sororities'>";
+// // orgselector+="<option disabled><b>--Sororities--</b></option>";
+// for (var i=0;i<sororitylist.length;i++){
+//     orgselector+="<option value="+sororitylist[i]+">"+sororitylist[i]+"</option>";
+// }
+// orgselector+="</optgroup>"
+// orgselector+=" <optgroup label='Fraternities'>";
+// for (var i=0;i<fraternitylist.length;i++){
+//     orgselector+="<option value="+fraternitylist[i]+">"+fraternitylist[i]+"</option>";
+// }
+// orgselector+="</optgroup>"
 
-orgselector+=" <optgroup label='Independent'>";
-// orgselector+="<option disabled><b>--Independent--</b></option>";
-for (var i=0;i<independentlist.length;i++){
-    orgselector+="<option value="+independentlist[i]+">"+independentlist[i]+"</option>";
-}
-orgselector+="</optgroup>"
-orgselector+=" <optgroup label='Blitz'>";
-// orgselector+="<option disabled><b>--Independent--</b></option>";
-for (var i=0;i<blitzlist.length;i++){
-    orgselector+="<option value="+blitzlist[i]+">"+blitzlist[i]+"</option>";
-}
-orgselector+="</optgroup>"
-orgselector+="</select>";
-orgselector+="</div>";
-$(".orgs").append(orgselector);
+// orgselector+=" <optgroup label='Independent'>";
+// // orgselector+="<option disabled><b>--Independent--</b></option>";
+// for (var i=0;i<independentlist.length;i++){
+//     orgselector+="<option value="+independentlist[i]+">"+independentlist[i]+"</option>";
+// }
+// orgselector+="</optgroup>"
+// orgselector+=" <optgroup label='Blitz'>";
+// // orgselector+="<option disabled><b>--Independent--</b></option>";
+// for (var i=0;i<blitzlist.length;i++){
+//     orgselector+="<option value="+blitzlist[i]+">"+blitzlist[i]+"</option>";
+// }
+// orgselector+="</optgroup>"
+// orgselector+="</select>";
+// orgselector+="</div>";
+// $(".orgs").append(orgselector);
 
-var statusselector="";
-statusselector+="<div class='soflow'>"
-statusselector+="<select>";
-statusselector+="<option selected disabled>Your Status</option>" 
-statusselector+="<option value='ready'>Ready For Moveon</option>";
-statusselector+="<option value='mtt'>Moving To Target</option>";
-statusselector+="<option value='ai'>Awaiting Instructions</option>";
-statusselector+="</select>";
-$(".status").append(statusselector);
+// var statusselector="";
+// statusselector+="<div class='soflow'>"
+// statusselector+="<select>";
+// statusselector+="<option selected disabled>Your Status</option>" 
+// statusselector+="<option value='ready'>Ready For Moveon</option>";
+// statusselector+="<option value='mtt'>Moving To Target</option>";
+// statusselector+="<option value='ai'>Awaiting Instructions</option>";
+// statusselector+="</select>";
+// $(".status").append(statusselector);
 </script>
 </body>
 
