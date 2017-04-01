@@ -44,10 +44,62 @@
 	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <link rel="stylesheet" type="text/css" href="css/granite.css" />
     <style>
+        @font-face {
+            font-family: 'Blender'; 
+            src: url("font/blender.ttf");
+        }
 		#map {
-			width: 600px;
-			height: 400px;
+			width:100%;
+			height: 350px;
 		}
+       input{
+            height:50px;
+            width:100%;
+        }
+        body{
+            background-color:#333;
+            color:#fff;
+        }
+    .soflow select {
+        font-family: "Blender","Helvetica Neue",Helvetica,Arial,sans-serif;
+        vertical-align: top; /* try this */
+        -webkit-appearance: button;
+        -webkit-border-radius: 2px;
+        -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+        -webkit-padding-end: 20px;
+        -webkit-padding-start: 2px;
+        -webkit-user-select: none;
+        background-image: url(http://i62.tinypic.com/15xvbd5.png), -webkit-linear-gradient(#FAFAFA, #F4F4F4 40%, #E5E5E5);
+        background-position: 97% center;
+        background-repeat: no-repeat;
+        border: 1px solid #AAA;
+        color: #555;
+        font-size: inherit;
+        /*margin: 23px 20px 20px 20px;*/
+        overflow: hidden;
+        padding: 5px 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+
+        }
+
+.wowbutton{
+  text-align:center;
+  position:relative;
+  font-family: "Blender",'HelveticaNeue-UltraLight', 'Helvetica Neue UltraLight', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  background-color: #4CAF50;
+  border: 2px solid #43A047;
+  width:50%;
+  padding: 10px;
+  color: #FFF;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.4s ease-in-out;
+}
+.wowbutton:hover {
+  background: #43A047;
+}
 	</style>
 
     <title>Hello World</title>
@@ -56,27 +108,19 @@
 <body>
     
     <div class="app">
+        <div style="font-family:'Blender';font-size:30px;">SCC OPERATOR: <span id="userID">NOT SIGNED IN</span> </div>
         <div id='map'></div>
-        Full name: <input id="inputName" type="text" name="FirstName" placeholder="Full name please"><br>
-                         <!--<input type="text" name="LastName" value="Mouse"><br>-->
-                        Phone type:
-                        <select id="phoneType">
-                        <option value="null">---------</option>
-                        <option value="android">Android</option>
-                        <option value="ios">iOS</option>
-                        <option value="others">Others</option>
-                        </select></br>
-                        Browser type:
-                        <select id="browserType">
-                        <option value="null">---------</option>
-                        <option value="chrome">Chrome</option>
-                        <option value="safari">Safari</option>
-                        <option value="others">Others</option>
-                        </select>
+        </br>
+        <div id="bottom">
+         <!--<input id="inputName" type="text" name="phone" placeholder="Andrew ID: ALL LOWER CASE"><br>
+               
+                        <div class="orgs"></div>
+                        <div class="status"></div>
                         </br>
-                        <button class="button1" onClick="ajaxinitializer();updateLocationFinder()">START</button>
+                        <button class="wowbutton" onClick="">START</button>
                         <div id="lat"></div>
-                            <div id="lng"></div>
+                            <div id="lng"></div>-->
+        </div>
     </div>
 
 
@@ -85,21 +129,126 @@
     <script type="text/javascript" src="cordova.js"></script>
     <!--<script type="text/javascript" src="js/index.js"></script>-->
      <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+     <script src='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.js'></script>
      <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
       <script>
-     
-      var map = L.map('map').fitWorld();
+L.mapbox.accessToken = 'pk.eyJ1IjoiamNweXVuIiwiYSI6ImNpdXEwdDE3MzAxd3oydnBlcGxidWc4YnoifQ.9ulCGrjVSrgFz4Ou_4jG7w';
+    //   var map = L.map('map').fitWorld();
 
-	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-		maxZoom: 18,
-		id: 'mapbox.streets'
-	}).addTo(map);
+	// L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+	// 	maxZoom: 18,
+	// 	id: 'mapbox.streets'
+	// }).addTo(map);
+var map = L.mapbox.map('map').fitWorld();
+map.setMaxBounds([[84.67351256610522, -174.0234375], [-58.995311187950925, 223.2421875]]);
 
+L.mapbox.styleLayer('mapbox://styles/mapbox/dark-v9').addTo(map); 
+var target_marker = L.marker(map.getCenter()); //// this is the marker target
 
       </script>
       <script>
+var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Andrew ID: ALL LOWER CASE"><br>'
+
+var usersigninbutton='<button class="wowbutton" onClick="signin()">Sign In</button>'
+if (document.getElementById("userID").innerHTML=="NOT SIGNED IN"){
+    document.getElementById("bottom").innerHTML=userinputfield+usersigninbutton;
+}
+else{
+
+}
+var currentUserId=""
+
+function signin(){
+    currentUserId=document.getElementById('inputName').value.toLowerCase();
+    document.getElementById("userID").innerHTML=currentUserId;
+    document.getElementById("bottom").innerHTML='<div class="status"></div>'
+    // currentUserId=document.getElementById('inputName').value.toLowerCase();
+    ajaxGet();
+}
+function ajaxGet(){
+    $.ajax({
+        type: "GET",
+        datatype: "json",
+        url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
+        success:function(result){
+            taskRetriever();
+        },
+        error:function (xhr, ajaxOptions, thrownError){
+            if(xhr.status==404) {
+                signupUser(currentUserId);
+            }
+        }
+    });
+}
+function signupUser(fromthe){
+    var data= {
+    'user':fromthe,
+   }
+    $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": "http://www.jcpyun.com/api/sccgps/create/",
+                "data": data,
+                "success": function(result) {
+                    taskRetriever();
+                },
+                "error": function(error){
+                }
+            });
+}
+function taskRetriever(){
+     window.setInterval(ajaxGetTask, 1000);
+}
+function ajaxGetTask(){
+    $.ajax({
+        type: "GET",
+        datatype: "json",
+        url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
+        success:function(result){
+            console.log(result,"FUCKINGSHIT");
+            if (result.task=="A"){
+                //this is telling you to go to the org
+                var lat = (result.target_latitude);
+                var lng = (result.target_longitude);
+                var newLatLng = new L.LatLng(lat, lng);
+                target_marker.setLatLng(newLatLng); 
+                target_marker.addTo(map);
+                document.getElementById("bottom").innerHTML="Go to the Marker Location and stand by";
+            }
+            if (result.task=="B"){
+                map.removeLayer(target_marker);
+                document.getElementById("bottom").innerHTML="Your status: Arrived at the target location </br> Please hold your position and wait for the dispatch";
+            }
+            if (result.task=="C"){
+                var localpath=result.path.split(",");
+                var newpath = [];
+                while(localpath.length) newpath.push(localpath.splice(0,2));
+                console.log(newpath);
+                 var pathpolyline = new L.Polyline(newpath, {
+                    color: 'red',
+                    weight: 5,
+                    opacity: 1,
+                    smoothFactor: 1
+                });
+                pathpolyline.addTo(map);
+                document.getElementById("bottom").innerHTML="Proceed to Midway with the path provided on the map</br>";
+            }
+            if (result.task=="RED"){
+                document.getElementById("bottom").innerHTML="PLEASE STOP WHERE YOU ARE. There has been an emergency"
+            }
+            //  document.getElementById("bottom").innerHTML=result.latitude
+            
+        },
+        error:function (xhr, ajaxOptions, thrownError){
+            if(xhr.status==404) {
+                alert("FUCK SOMETHIGN WENT WRONG!!!!")
+            }
+        }
+    });
+}
 
 
+//////////////////////////////////////
 function locationFinder(){
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition( onSuccess,
@@ -121,7 +270,7 @@ function updateLocationFinder(){
 var browserGeolocationFail = function(error) {
   switch (error.code) {
     case error.TIMEOUT:
-      alert(error.message);
+      console.log(error.message);
       break;
     case error.PERMISSION_DENIED:
       if(error.message.indexOf("Only secure origins are allowed") == 0) {
@@ -130,12 +279,12 @@ var browserGeolocationFail = function(error) {
       break;
     case error.POSITION_UNAVAILABLE:
     //   alert("Browser geolocation error !\n\nPosition unavailable.");
-    alert(error.message);
+    console.log(error.message);
       break;
   }
 };
  var onUpdateSuccess = function(position) {
-      map.setView([position.coords.latitude,position.coords.longitude], 17)
+    map.setView([position.coords.latitude,position.coords.longitude], 17)
      document.getElementById("lat").innerHTML+="</br>"+position.coords.latitude;
      document.getElementById("lat").innerHTML+="</br>"+position.coords.longitude;
     var locator=L.circleMarker([position.coords.latitude,position.coords.longitude],{
@@ -151,7 +300,7 @@ var browserGeolocationFail = function(error) {
                     radius:6,
                 }).addTo(map);
                
-    ajaxlocation(document.getElementById('inputName').value,position.coords.latitude,position.coords.longitude);
+    // ajaxlocation(document.getElementById('inputName').value,position.coords.latitude,position.coords.longitude);
     
  }
 
@@ -174,28 +323,19 @@ var browserGeolocationFail = function(error) {
     // ajaxlocation(document.getElementById('inputName').value,position.coords.latitude,position.coords.longitude);
  }
  function ajaxlocation(user,lat,lng){
-      console.log("shit");
-    var inputName= document.getElementById('inputName').value;
-    var e = document.getElementById('phoneType');
-    var phoneType = e.options[e.selectedIndex].value;
-    var b = document.getElementById('browserType');
-    var browserType = b.options[b.selectedIndex].value;
-   
+   var inputName= document.getElementById('inputName').value;
+   var orgselected = $('#orgoptions').find(":selected").text();
    var data= {
-    'user':user,
-    'firstname':String(phoneType),
-    'lastname':String(browserType),
-    'committee':"Officer",
-    'phone':"123",
-    'email':"wow@gmail.com",
-    'latitude':String(lat),
-    'longitude':String(lng),
+    'user':inputName,
+    'org':orgselected,
+    'latitude':0,
+    'longitude':0,
     // csrfmiddlewaretoken: '{{ csrf_token }}',
    }
     $.ajax({
                 "type": "PUT",
                 "dataType": "json",
-                "url": "http://www.jcpyun.com/api/scc/"+inputName+"/update/",
+                "url": "http://www.jcpyun.com/api/sccgps/create",
                 "data": data,
                 
                 "success": function(result) {
@@ -208,18 +348,7 @@ var browserGeolocationFail = function(error) {
             });
 
 }
-    //     alert('Latitude: '          + position.coords.latitude          + '\n' +
-    //           'Longitude: '         + position.coords.longitude         + '\n' +
-    //           'Altitude: '          + position.coords.altitude          + '\n' +
-    //           'Accuracy: '          + position.coords.accuracy          + '\n' +
-    //           'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-    //           'Heading: '           + position.coords.heading           + '\n' +
-    //           'Speed: '             + position.coords.speed             + '\n' +
-    //           'Timestamp: '         + position.timestamp                + '\n');
-    // };
 
-    // onError Callback receives a PositionError object
-    //
     function onError(error) {
         alert('code: '    + error.code    + '\n' +
               'message: ' + error.message + '\n');
@@ -233,19 +362,11 @@ var browserGeolocationFail = function(error) {
 
 
 function ajaxinitializer(){
-    var inputName= document.getElementById('inputName').value;
-    var e = document.getElementById('phoneType');
-    var phoneType = e.options[e.selectedIndex].value;
-    var b = document.getElementById('browserType');
-    var browserType = b.options[b.selectedIndex].value;
-   
+   var inputName= document.getElementById('inputName').value;
+   var orgselected = $('#orgoptions').find(":selected").text();
    var data= {
-    'user':inputName,
-    'firstname':phoneType,
-    'lastname':browserType,
-    'committee':"Officer",
-    'phone':"123",
-    'email':"wow@gmail.com",
+    'phone':inputName,
+    'org':orgselected,
     'latitude':0,
     'longitude':0,
     // csrfmiddlewaretoken: '{{ csrf_token }}',
@@ -253,7 +374,7 @@ function ajaxinitializer(){
      $.ajax({
                 "type": "POST",
                 "dataType": "json",
-                "url": "http://www.jcpyun.com/scc_test/",
+                "url": "http://www.jcpyun.com/api/sccgps/create/",
                 "data": data,
                 
                 "success": function(result) {
@@ -276,6 +397,53 @@ function ajaxinitializer(){
         // getCurrentLocation();
          locationFinder();
     </script>
+    <script>
+var sororitylist=["AXO","Alpha Phi","Tri Delta", "DG","Theta","KKG", ];
+var fraternitylist=["AEPi", "Alpha_Sig","DTD","Phi_Delt","SigEp",];
+var independentlist=["APO","ASA","Fringe","KGB","TSA"];
+var blitzlist=["Astro","Math","Sigma_Chi","SDC","AKPsi","CSA??","SOCE??","Kap_Sig"];
+orgselector="";
+orgselector+="<div class='soflow'>"
+orgselector+="<select id='orgoptions'>";
+orgselector+="<option selected disabled>Choose an org</option>" 
+orgselector+=" <optgroup label='Sororities'>";
+// orgselector+="<option disabled><b>--Sororities--</b></option>";
+for (var i=0;i<sororitylist.length;i++){
+    orgselector+="<option value="+sororitylist[i]+">"+sororitylist[i]+"</option>";
+}
+orgselector+="</optgroup>"
+orgselector+=" <optgroup label='Fraternities'>";
+for (var i=0;i<fraternitylist.length;i++){
+    orgselector+="<option value="+fraternitylist[i]+">"+fraternitylist[i]+"</option>";
+}
+orgselector+="</optgroup>"
+
+orgselector+=" <optgroup label='Independent'>";
+// orgselector+="<option disabled><b>--Independent--</b></option>";
+for (var i=0;i<independentlist.length;i++){
+    orgselector+="<option value="+independentlist[i]+">"+independentlist[i]+"</option>";
+}
+orgselector+="</optgroup>"
+orgselector+=" <optgroup label='Blitz'>";
+// orgselector+="<option disabled><b>--Independent--</b></option>";
+for (var i=0;i<blitzlist.length;i++){
+    orgselector+="<option value="+blitzlist[i]+">"+blitzlist[i]+"</option>";
+}
+orgselector+="</optgroup>"
+orgselector+="</select>";
+orgselector+="</div>";
+$(".orgs").append(orgselector);
+
+var statusselector="";
+statusselector+="<div class='soflow'>"
+statusselector+="<select>";
+statusselector+="<option selected disabled>Your Status</option>" 
+statusselector+="<option value='ready'>Ready For Moveon</option>";
+statusselector+="<option value='mtt'>Moving To Target</option>";
+statusselector+="<option value='ai'>Awaiting Instructions</option>";
+statusselector+="</select>";
+$(".status").append(statusselector);
+</script>
 </body>
 
 </html>
