@@ -160,7 +160,7 @@ div.tab button.active {
 <body>
     
     <div class="app" style="margin-top:20px;">
-        <div style="font-family:'Blender';font-size:30px;height:30px;">SCC OPERATOR: <span id="userID">NOT SIGNED IN</span> </div>
+        <div style="font-family:'Blender';font-size:30px;height:30px;">v1.1 SCC: <span id="userID">NOT SIGNED IN</span> </div>
         <div id='map'></div>
         </br>
         <!--<div class="bottomhalf">-->
@@ -192,8 +192,10 @@ div.tab button.active {
                     </div>
             </div>-->
        
-      
+        <div id="statusid"></div>
         <div id="console"></div>
+        <div id="latid"></div>
+        <div id="lngid"></div>
        
     </div>
 
@@ -207,16 +209,20 @@ div.tab button.active {
      <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
       <script>
 // navigator.geolocation.getCurrentPosition(initsuccess,initerror);
-function initsuccess(){
-     map.setView([position.coords.latitude,position.coords.longitude], 17);
-     $("#console").remove();
-}
-function initerror(){
-    document.getElementById("console").innerHTML="error initialized";
-}
-document.addEventListener('DOMContentLoaded', function () { 
-     document.getElementById("defaultOpen").click();
-});
+
+var userlat="";
+var userlng="";
+navigator.geolocation.watchPosition(
+    function(position){
+        document.getElementById("latid").innerHTML=position.coords.latitude;
+        userlat=position.coords.latitude;
+        document.getElementById("lngid").innerHTML=position.coords.longitude;
+        userlng=position.coords.longitude
+        },
+    function(position){
+       document.getElementById("console").innerHTML="watchposition Error"}
+    );
+   
 L.mapbox.accessToken = 'pk.eyJ1IjoiamNweXVuIiwiYSI6ImNpdXEwdDE3MzAxd3oydnBlcGxidWc4YnoifQ.9ulCGrjVSrgFz4Ou_4jG7w';
     //   var map = L.map('map').fitWorld();
 
@@ -229,79 +235,80 @@ map.setMaxBounds([[84.67351256610522, -174.0234375], [-58.995311187950925, 223.2
 
 L.mapbox.styleLayer('mapbox://styles/mapbox/dark-v9').addTo(map); 
 var target_marker = L.marker(map.getCenter()); //// this is the marker target
-var circle1;
-var circle2;
-      </script>
-      <script>
-var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Andrew ID: ALL LOWER CASE"><br>'
+
+map.locate({setView: true, maxZoom: 16});
+
+var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Enter Your Andrew ID"><br>'
 
 var usersigninbutton='<button class="wowbutton" onClick="signin()">Sign In</button>'
 if (document.getElementById("userID").innerHTML=="NOT SIGNED IN"){
     document.getElementById("bottom").innerHTML=userinputfield+usersigninbutton;
 }
-else{
 
-}
 var currentUserId=""
 
 
-
-function openTab(evt, tabName) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
-
-
-
-
-
-
-
 function signin(){
-    
+    // get location finder here
+      checkIfUserRegisteredIfNotRegister()
+
     currentUserId=document.getElementById('inputName').value.toLowerCase();
     document.getElementById("userID").innerHTML=currentUserId;
     document.getElementById("bottom").innerHTML='<button class="wowbutton" id="startbutton" onClick="start()">START</button>'
     document.getElementById("bottom").innerHTML+='<div class="status"></div>'
     // currentUserId=document.getElementById('inputName').value.toLowerCase();
-    
 }
+
+
+
 function start(){
     $('#startbutton').remove();
-    locationFinder();
-
-    ajaxGet();
-
+    statusPoster()
+    
+    taskRetriever();
 }
-function ajaxGet(){
+function checkIfUserRegisteredIfNotRegister(){
     $.ajax({
-        type: "GET",
-        datatype: "json",
-        url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
-        success:function(result){
-            taskRetriever();
-            locationFinder();
-        },
-        error:function (xhr, ajaxOptions, thrownError){
-            if(xhr.status==404) {
-                signupUser(currentUserId);
-            }
-        }
-    });
+                "type": "GET",
+                "dataType": "json",
+                "url": "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
+                "success": function(result) {
+                    alert("Login Success!");
+                },
+                "error": function(error){
+                    alert("creatingnew");
+                    signupUser(currentUserId)
+                    
+
+                }
+            });
+
 }
-function signupUser(fromthe){
+
+function statusPoster(){
+    commandselector="";
+    commandselector+="<div class='soflow'>";
+    commandselector+="<select id='commandcommand'>";
+    commandselector+="<option selected disabled value='null'>Report Your status</option>" ;
+    commandselector+="<option value='A'>A: Going To the Designated Org</option>";
+    commandselector+="<option value='B'>B: Holding Position...</option>";
+    commandselector+="<option  value='C'>C: Proceeding to Midway</option>";
+    commandselector+="<option  value='C_a'>C_a: Proceeding to Midway - FOOT</option>";
+    commandselector+="<option  value='C_b'>C_a: Proceeding to Midway - VEHICLE</option>";
+    commandselector+="<option  value='D'>D: Proceeding to the Trailer</option>";
+    commandselector+="<option  value='E'>E: Radioing in</option>";
+    commandselector+="<option  value='RED'>RED: EMERGENCY</option>";
+    commandselector+="</select>";
+    commandselector+="</div>";
+    $("#statusid").append(commandselector);
+    alert("statusposter worked");
+}
+
+
+
+function signupUser(u){
     var data= {
-    'user':fromthe,
+    'user':u,
    }
     $.ajax({
                 "type": "POST",
@@ -309,189 +316,64 @@ function signupUser(fromthe){
                 "url": "http://www.jcpyun.com/api/sccgps/create/",
                 "data": data,
                 "success": function(result) {
-                    taskRetriever();
+                    alert("Welcome New User! Registration was successful!")
                 },
                 "error": function(error){
+                     alert("Something went wrong during registration")
                 }
             });
 }
+
 function taskRetriever(){
-     window.setInterval(ajaxGetTask, 6000);
+     window.setInterval(ajaxUpdateCoordPinOnMapAndGetTask, 1000);
 }
-function ajaxGetTask(){
+var circle1;
+var circle2;
+function ajaxUpdateCoordPinOnMapAndGetTask(){
+    alert(userlat,userlng,currentUserId);
+    var data={
+        latitude:userlat,
+        longitude:userlng,
+    }
     $.ajax({
-        type: "GET",
-        datatype: "json",
-        url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
-        success:function(result){
-            // console.log(result,"FUCKINGSHIT");
-            if (result.task=="A"){
-                //this is telling you to go to the org
-                var lat = (result.target_latitude);
-                var lng = (result.target_longitude);
-                var newLatLng = new L.LatLng(lat, lng);
-                target_marker.setLatLng(newLatLng); 
-                target_marker.addTo(map);
-                document.getElementById("bottom").innerHTML="Go to the Marker Location and stand by";
-            }
-            if (result.task=="B"){
-                map.removeLayer(target_marker);
-                document.getElementById("bottom").innerHTML="Your status: Arrived at the target location </br> Please hold your position and wait for the dispatch";
-            }
-            if (result.task=="C"){
-                var localpath=result.path.split(",");
-                var newpath = [];
-                while(localpath.length) newpath.push(localpath.splice(0,2));
-                console.log(newpath);
-                 var pathpolyline = new L.Polyline(newpath, {
-                    color: 'red',
-                    weight: 5,
-                    opacity: 1,
-                    smoothFactor: 1
-                });
-                pathpolyline.addTo(map);
-                document.getElementById("bottom").innerHTML="Proceed to Midway with the path provided on the map</br>";
-            }
-            if (result.task=="RED"){
-                document.getElementById("bottom").innerHTML="PLEASE STOP WHERE YOU ARE. There has been an emergency"
-            }
-            //  document.getElementById("bottom").innerHTML=result.latitude
-            
-        },
-        error:function (xhr, ajaxOptions, thrownError){
-            if(xhr.status==404) {
-                alert("FUCK SOMETHIGN WENT WRONG!!!!")
-            }
-        }
-    });
-}
-
-
-//////////////////////////////////////
-function locationFinder(){
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition( onSuccess,
-      browserGeolocationFail,
-      {maximumAge: 50000, timeout: 20000, enableHighAccuracy: true});
-
-  }
-}
-
-
-var browserGeolocationFail = function(error) {
-  switch (error.code) {
-    case error.TIMEOUT:
-      console.log(error.message);
-      break;
-    case error.PERMISSION_DENIED:
-      if(error.message.indexOf("Only secure origins are allowed") == 0) {
-        // tryAPIGeolocation();
-      }
-      break;
-    case error.POSITION_UNAVAILABLE:
-    //   alert("Browser geolocation error !\n\nPosition unavailable.");
-    console.log(error.message);
-      break;
-  }
-};
-
-
- var onSuccess = function(position) {
-    //  console.log(position.timestamp);///// attempt
-     ajaxGPSUpdate(currentUserId,position.coords.latitude,position.coords.longitude)
-   if (circle1==undefined)
-   {
-       circle1=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#FFA500',
-                    fillColor:'#00ffff',
-                    fillOpacity:0.1,
-                    radius:8
-                });
-       circle2=L.circleMarker([position.coords.latitude,position.coords.longitude],{
-                    color:'#FFA500',
-                    radius:1
-                });
-                circle1.addTo(map);
-    circle2.addTo(map);
-   }
-   else{
-       circle1.setLatLng([position.coords.latitude,position.coords.longitude]);
-       circle2.setLatLng([position.coords.latitude,position.coords.longitude]);
-   }
- }
-
- function ajaxGPSUpdate(u,la,ln){
-    var data= {
-    'latitude':la,
-    'longitude':ln
-   }
-    $.ajax({
-                "type": "PATCH",
-                "dataType": "json",
-                "url": "http://www.jcpyun.com/api/sccgps/"+u+"/update/",
-                "data": data,
-                "success": function(result) {
-                    // taskRetriever();
-                },
-                "error": function(error){
+            "type": "PATCH",
+            "datatype": "json",
+            "url": "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/update/",
+            "data":data,
+            "success":function(result){
+                // console.log(result);
+                if (circle1==undefined)
+                {
+                    circle1=L.circleMarker([userlat,userlng],{
+                                    color:'#FFA500',
+                                    fillColor:'#00ffff',
+                                    fillOpacity:0.1,
+                                    radius:8
+                                });
+                    circle2=L.circleMarker([userlat,userlng],{
+                                    color:'#FFA500',
+                                    radius:1
+                                });
+                                circle1.addTo(map);
+                    circle2.addTo(map);
                 }
-            });
+                else{
+                    circle1.setLatLng([userlat,userlng]);
+                    circle2.setLatLng([userlat,userlng]);
+                }
+                alert("taskretriever works");
+            },
+            "error":function (xhr, ajaxOptions, thrownError){
+                if(xhr.status==404) {
+                    alert("getTask Error Detected");
+                }
+            }
+        });
 }
 
 
-
-      </script>
-    <script type="text/javascript">
-        // app.initialize();
-        // getCurrentLocation();
-        
-    
-// var sororitylist=["AXO","Alpha Phi","Tri Delta", "DG","Theta","KKG", ];
-// var fraternitylist=["AEPi", "Alpha_Sig","DTD","Phi_Delt","SigEp",];
-// var independentlist=["APO","ASA","Fringe","KGB","TSA"];
-// var blitzlist=["Astro","Math","Sigma_Chi","SDC","AKPsi","CSA??","SOCE??","Kap_Sig"];
-// orgselector="";
-// orgselector+="<div class='soflow'>"
-// orgselector+="<select id='orgoptions'>";
-// orgselector+="<option selected disabled>Choose an org</option>" 
-// orgselector+=" <optgroup label='Sororities'>";
-// // orgselector+="<option disabled><b>--Sororities--</b></option>";
-// for (var i=0;i<sororitylist.length;i++){
-//     orgselector+="<option value="+sororitylist[i]+">"+sororitylist[i]+"</option>";
-// }
-// orgselector+="</optgroup>"
-// orgselector+=" <optgroup label='Fraternities'>";
-// for (var i=0;i<fraternitylist.length;i++){
-//     orgselector+="<option value="+fraternitylist[i]+">"+fraternitylist[i]+"</option>";
-// }
-// orgselector+="</optgroup>"
-
-// orgselector+=" <optgroup label='Independent'>";
-// // orgselector+="<option disabled><b>--Independent--</b></option>";
-// for (var i=0;i<independentlist.length;i++){
-//     orgselector+="<option value="+independentlist[i]+">"+independentlist[i]+"</option>";
-// }
-// orgselector+="</optgroup>"
-// orgselector+=" <optgroup label='Blitz'>";
-// // orgselector+="<option disabled><b>--Independent--</b></option>";
-// for (var i=0;i<blitzlist.length;i++){
-//     orgselector+="<option value="+blitzlist[i]+">"+blitzlist[i]+"</option>";
-// }
-// orgselector+="</optgroup>"
-// orgselector+="</select>";
-// orgselector+="</div>";
-// $(".orgs").append(orgselector);
-
-// var statusselector="";
-// statusselector+="<div class='soflow'>"
-// statusselector+="<select>";
-// statusselector+="<option selected disabled>Your Status</option>" 
-// statusselector+="<option value='ready'>Ready For Moveon</option>";
-// statusselector+="<option value='mtt'>Moving To Target</option>";
-// statusselector+="<option value='ai'>Awaiting Instructions</option>";
-// statusselector+="</select>";
-// $(".status").append(statusselector);
 </script>
+
 </body>
 
 </html>

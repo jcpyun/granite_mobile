@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2012-2016 Adobe Systems Incorporated. All rights reserved.
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
+    <!-- Good default declaration:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+        * Enable inline JS: add 'unsafe-inline' to default-src
+        * Enable eval(): add 'unsafe-eval' to default-src
+    * Create your own at http://cspisawesome.com
+    -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+
+    <!--<link rel="stylesheet" type="text/css" href="css/index.css" />-->
+    <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
+  
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/granite.css" />
+    <style>
+        @font-face {
+            font-family: 'Blender'; 
+            src: url("font/blender.ttf");
+        }
+		#map {
+			width:100%;
+			height: 350px;
+		}
+       input{
+            height:50px;
+            width:100%;
+        }
+        body{
+            background-color:#333;
+            color:#fff;
+            height:100%;
+            width:100%;
+        }
+    .soflow select {
+        font-family: "Blender","Helvetica Neue",Helvetica,Arial,sans-serif;
+        vertical-align: top; /* try this */
+        -webkit-appearance: button;
+        -webkit-border-radius: 2px;
+        -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+        -webkit-padding-end: 20px;
+        -webkit-padding-start: 2px;
+        -webkit-user-select: none;
+        background-image: url(http://i62.tinypic.com/15xvbd5.png), -webkit-linear-gradient(#FAFAFA, #F4F4F4 40%, #E5E5E5);
+        background-position: 97% center;
+        background-repeat: no-repeat;
+        border: 1px solid #AAA;
+        color: #555;
+        font-size: inherit;
+        /*margin: 23px 20px 20px 20px;*/
+        overflow: hidden;
+        padding: 5px 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+
+        }
+
+.wowbutton{
+  text-align:center;
+  position:relative;
+  font-family: "Blender",'HelveticaNeue-UltraLight', 'Helvetica Neue UltraLight', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  background-color: #4CAF50;
+  border: 2px solid #43A047;
+  width:50%;
+  padding: 10px;
+  color: #FFF;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.4s ease-in-out;
+}
+.wowbutton:hover {
+  background: #43A047;
+}
+.getstatus{
+
+    border-color:#ddd;
+    background-color:#fff;
+    border:1px solid transparent;
+    border-radius:4px;
+    box-shadow:0 1px 1px rgba(0,0,0,0.05);
+    /*padding:10 10 10 10;*/
+    font-family: "Blender","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 200;
+    letter-spacing: 1px;
+    font-size:15px;
+    color: #aaaaaa;
+	margin-top:0px;
+    /*height:400px;*/
+    width:100%;
+    /*float:right;*/
+    height:100%;
+}
+div.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    height:20px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    color:#000;
+    height:100%;
+}
+
+
+	</style>
+
+    <title>Hello World</title>
+</head>
+
+<body>
+    
+    <div class="app" style="margin-top:20px;">
+        <div style="font-family:'Blender';font-size:30px;height:30px;">v6 SCC OPERATOR: <span id="userID">NOT SIGNED IN</span> </div>
+        <div id='map'></div>
+        </br>
+        <!--<div class="bottomhalf">-->
+            <div id="bottom"></div>
+            <!--<div class="getstatus"> 
+              
+                    <div class="getstatushead">
+                        Status
+                    </div>
+
+                    <div class="tab">
+                        <button class="tablinks" onclick="openTab(event, 'tabs-1')" id="defaultOpen">COMPLETE</button>
+                        <button class="tablinks" onclick="openTab(event, 'tabs-2')">MOVING</button>
+                        <button class="tablinks" onclick="openTab(event, 'tabs-3')">STANDBY</button>
+                        <button class="tablinks" onclick="openTab(event, 'tabs-4')">NOT READY</button>
+                    </div>
+
+                    <div class="tabcontent" id="tabs-1">
+                    a
+                    </div>
+                    <div class="tabcontent" id="tabs-2">
+                    add
+                    </div>
+                    <div class="tabcontent" id="tabs-3">
+                     a
+                    </div>
+                    <div class="tabcontent" id="tabs-4">
+                      a
+                    </div>
+            </div>-->
+       
+        <div id="statusid"></div>
+        <div id="console"></div>
+       
+    </div>
+
+
+
+    
+    <script type="text/javascript" src="cordova.js"></script>
+    <!--<script type="text/javascript" src="js/index.js"></script>-->
+     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+     <script src='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.js'></script>
+     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+      <script>
+// navigator.geolocation.getCurrentPosition(initsuccess,initerror);
+
+navigator.geolocation.watchPosition(function(position){alert(position)},function(position){alert("initial fail")});
+   
+L.mapbox.accessToken = 'pk.eyJ1IjoiamNweXVuIiwiYSI6ImNpdXEwdDE3MzAxd3oydnBlcGxidWc4YnoifQ.9ulCGrjVSrgFz4Ou_4jG7w';
+    //   var map = L.map('map').fitWorld();
+
+	// L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+	// 	maxZoom: 18,
+	// 	id: 'mapbox.streets'
+	// }).addTo(map);
+var map = L.mapbox.map('map').fitWorld();
+map.setMaxBounds([[84.67351256610522, -174.0234375], [-58.995311187950925, 223.2421875]]);
+
+L.mapbox.styleLayer('mapbox://styles/mapbox/dark-v9').addTo(map); 
+var target_marker = L.marker(map.getCenter()); //// this is the marker target
+
+map.locate({setView: true, maxZoom: 16});
+
+      </script>
+      <script>
+var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Enter Your Andrew ID"><br>'
+
+var usersigninbutton='<button class="wowbutton" onClick="signin()">Sign In</button>'
+if (document.getElementById("userID").innerHTML=="NOT SIGNED IN"){
+    document.getElementById("bottom").innerHTML=userinputfield+usersigninbutton;
+}
+else{
+
+}
+var currentUserId=""
+
+
+
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+
+
+
+
+
+
+function signin(){
+    // get location finder here
+  
+
+    currentUserId=document.getElementById('inputName').value.toLowerCase();
+    document.getElementById("userID").innerHTML=currentUserId;
+    document.getElementById("bottom").innerHTML='<button class="wowbutton" id="startbutton" onClick="start()">START</button>'
+    document.getElementById("bottom").innerHTML+='<div class="status"></div>'
+    // currentUserId=document.getElementById('inputName').value.toLowerCase();
+}
+
+
+
+function start(){
+    $('#startbutton').remove();
+    
+    // locationFinder();
+    // ajaxGetTask();
+    taskRetriever();
+    statusPoster()
+    
+}
+function statusPoster(){
+    commandselector="";
+    commandselector+="<div class='soflow'>";
+    commandselector+="<select id='commandcommand'>";
+    commandselector+="<option selected disabled value='null'>Report Your status</option>" ;
+    commandselector+="<option value='A'>A: Going To the Designated Org</option>";
+    commandselector+="<option value='B'>B: Holding Position...</option>";
+    commandselector+="<option  value='C'>C: Proceeding to Midway</option>";
+    commandselector+="<option  value='C_a'>C_a: Proceeding to Midway - FOOT</option>";
+    commandselector+="<option  value='C_b'>C_a: Proceeding to Midway - VEHICLE</option>";
+    commandselector+="<option  value='D'>D: Proceeding to the Trailer</option>";
+    commandselector+="<option  value='E'>E: Radioing in</option>";
+    commandselector+="<option  value='RED'>RED: EMERGENCY</option>";
+
+    commandselector+="</select>";
+    commandselector+="</div>";
+    $("#statusid").append(commandselector);
+}
+
+
+
+function signupUser(fromthe){
+    var data= {
+    'user':fromthe,
+   }
+    $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": "http://www.jcpyun.com/api/sccgps/create/",
+                "data": data,
+                "success": function(result) {
+                    taskRetriever();
+                },
+                "error": function(error){
+                }
+            });
+}
+function taskRetriever(){
+     window.setInterval(ajaxGetTask, 1000);
+}
+function ajaxGetTask(){
+    $.ajax({
+        type: "GET",
+        datatype: "json",
+        url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
+        success:function(result){
+            locationFinder();
+            // console.log(result,"FUCKINGSHIT");
+            if (result.task=="A"){
+                //this is telling you to go to the org
+                var lat = (result.target_latitude);
+                var lng = (result.target_longitude);
+                var newLatLng = new L.LatLng(lat, lng);
+                target_marker.setLatLng(newLatLng); 
+                target_marker.addTo(map);
+                document.getElementById("bottom").innerHTML="Dispatch: Go to the Marker Location and stand by";
+            }
+            if (result.task=="B"){
+                map.removeLayer(target_marker);
+                document.getElementById("bottom").innerHTML="Dispatch: Hold Your Position and wait for further instruction";
+            }
+            if (result.task=="C"){
+                if (result.path!=null){
+                var localpath=result.path.split(",");
+                var newpath = [];
+                while(localpath.length) newpath.push(localpath.splice(0,2));
+                console.log(newpath);
+                 var pathpolyline = new L.Polyline(newpath, {
+                    color: 'red',
+                    weight: 5,
+                    opacity: 1,
+                    smoothFactor: 1
+                });
+                pathpolyline.addTo(map);
+                }
+                document.getElementById("bottom").innerHTML="Proceed to Midway with the path provided on the map</br>";
+            }
+            if (result.task=="C_a"){
+                if (result.path!=null){
+                var localpath=result.path.split(",");
+                var newpath = [];
+                while(localpath.length) newpath.push(localpath.splice(0,2));
+                console.log(newpath);
+                 var pathpolyline = new L.Polyline(newpath, {
+                    color: 'red',
+                    weight: 5,
+                    opacity: 1,
+                    smoothFactor: 1
+                });
+                pathpolyline.addTo(map);
+                }
+                document.getElementById("bottom").innerHTML="Proceed to Midway ON FOOT with the path provided on the map</br>";
+            }
+            if (result.task=="C_b"){
+                if (result.path!=null){
+                var localpath=result.path.split(",");
+                var newpath = [];
+                while(localpath.length) newpath.push(localpath.splice(0,2));
+                console.log(newpath);
+                 var pathpolyline = new L.Polyline(newpath, {
+                    color: 'red',
+                    weight: 5,
+                    opacity: 1,
+                    smoothFactor: 1
+                });
+                pathpolyline.addTo(map);
+                }
+                document.getElementById("bottom").innerHTML="Proceed to Midway W/TRANSPORT with the path provided on the map</br>";
+            }
+            if (result.task=="D"){
+                map.removeLayer(target_marker);
+                document.getElementById("bottom").innerHTML="Dispatch: Come to the Midway Trailer at your earliest convenience.";
+            }
+            if (result.task=="E"){
+                map.removeLayer(target_marker);
+                document.getElementById("bottom").innerHTML="Dispatch: Radio Joe";
+            }
+            if (result.task=="RED"){
+                document.getElementById("bottom").innerHTML="PLEASE STOP WHERE YOU ARE. There has been an emergency"
+            }
+            //  document.getElementById("bottom").innerHTML=result.latitude
+            
+        },
+        error:function (xhr, ajaxOptions, thrownError){
+             if(xhr.status==404) {
+                signupUser(currentUserId);
+                console.log("user not registered");
+            }
+        }
+    });
+}
+
+
+//////////////////////////////////////
+function locationFinder(){
+    // alert("locationFinder activated");
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition( onSuccess,
+      browserGeolocationFail,
+      {maximumAge: 50000, timeout: 20000, enableHighAccuracy: true});
+
+  }
+}
+
+
+
+var browserGeolocationFail = function(error) {
+  switch (error.code) {
+    case error.TIMEOUT:
+      console.log(error.message);
+      break;
+    case error.PERMISSION_DENIED:
+      if(error.message.indexOf("Only secure origins are allowed") == 0) {
+        // tryAPIGeolocation();
+      }
+      break;
+    case error.POSITION_UNAVAILABLE:
+    //   alert("Browser geolocation error !\n\nPosition unavailable.");
+    console.log(error.message);
+      break;
+  }
+};
+
+var circle1;
+var circle2;
+ var onSuccess = function(position) {
+    //  console.log(position.timestamp);///// attempt
+    document.getElementById("console").innerHTML="reached here1"
+     ajaxGPSUpdate(currentUserId,position.coords.latitude,position.coords.longitude)
+    document.getElementById("console").innerHTML="reached here2"
+   if (circle1==undefined)
+   {
+       circle1=L.circleMarker([position.coords.latitude,position.coords.longitude],{
+                    color:'#FFA500',
+                    fillColor:'#00ffff',
+                    fillOpacity:0.1,
+                    radius:8
+                });
+       circle2=L.circleMarker([position.coords.latitude,position.coords.longitude],{
+                    color:'#FFA500',
+                    radius:1
+                });
+                circle1.addTo(map);
+    circle2.addTo(map);
+   }
+   else{
+       circle1.setLatLng([position.coords.latitude,position.coords.longitude]);
+       circle2.setLatLng([position.coords.latitude,position.coords.longitude]);
+   }
+ }
+
+ function ajaxGPSUpdate(u,la,ln){
+    var data= {
+    'latitude':la,
+    'longitude':ln
+   }
+    $.ajax({
+                "type": "PATCH",
+                "dataType": "json",
+                "url": "http://www.jcpyun.com/api/sccgps/"+u+"/update/",
+                "data": data,
+                "success": function(result) {
+                     document.getElementById("console").innerHTML="AJAXGPSUPDATE Success";
+                },
+                "error": function(error){
+                     document.getElementById("console").innerHTML="ajaxGPSUPDATE error initialized";
+                }
+            });
+}
+
+
+
+      </script>
+
+</body>
+
+</html>
