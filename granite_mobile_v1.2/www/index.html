@@ -59,6 +59,8 @@
         body{
             background-color:#333;
             color:#fff;
+            height:100%;
+            width:100%;
         }
     .soflow select {
         font-family: "Blender","Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -100,6 +102,56 @@
 .wowbutton:hover {
   background: #43A047;
 }
+.getstatus{
+
+    border-color:#ddd;
+    background-color:#fff;
+    border:1px solid transparent;
+    border-radius:4px;
+    box-shadow:0 1px 1px rgba(0,0,0,0.05);
+    /*padding:10 10 10 10;*/
+    font-family: "Blender","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 200;
+    letter-spacing: 1px;
+    font-size:15px;
+    color: #aaaaaa;
+	margin-top:0px;
+    /*height:400px;*/
+    width:100%;
+    /*float:right;*/
+    height:100%;
+}
+div.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    height:20px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    color:#000;
+    height:100%;
+}
+
+
 	</style>
 
     <title>Hello World</title>
@@ -107,21 +159,42 @@
 
 <body>
     
-    <div class="app">
-        <div style="font-family:'Blender';font-size:30px;">SCC OPERATOR: <span id="userID">NOT SIGNED IN</span> </div>
+    <div class="app" style="margin-top:20px;">
+        <div style="font-family:'Blender';font-size:30px;height:30px;">SCC OPERATOR: <span id="userID">NOT SIGNED IN</span> </div>
         <div id='map'></div>
         </br>
-        <div id="bottom">
-         <!--<input id="inputName" type="text" name="phone" placeholder="Andrew ID: ALL LOWER CASE"><br>
-               
-                        <div class="orgs"></div>
-                        <div class="status"></div>
-                        </br>
-                        <button class="wowbutton" onClick="">START</button>
-                        <div id="lat"></div>
-                            <div id="lng"></div>-->
-        </div>
+        <!--<div class="bottomhalf">-->
+            <div id="bottom"></div>
+            <!--<div class="getstatus"> 
+              
+                    <div class="getstatushead">
+                        Status
+                    </div>
+
+                    <div class="tab">
+                        <button class="tablinks" onclick="openTab(event, 'tabs-1')" id="defaultOpen">COMPLETE</button>
+                        <button class="tablinks" onclick="openTab(event, 'tabs-2')">MOVING</button>
+                        <button class="tablinks" onclick="openTab(event, 'tabs-3')">STANDBY</button>
+                        <button class="tablinks" onclick="openTab(event, 'tabs-4')">NOT READY</button>
+                    </div>
+
+                    <div class="tabcontent" id="tabs-1">
+                    a
+                    </div>
+                    <div class="tabcontent" id="tabs-2">
+                    add
+                    </div>
+                    <div class="tabcontent" id="tabs-3">
+                     a
+                    </div>
+                    <div class="tabcontent" id="tabs-4">
+                      a
+                    </div>
+            </div>-->
+       
+      
         <div id="console"></div>
+       
     </div>
 
 
@@ -133,14 +206,17 @@
      <script src='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.js'></script>
      <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
       <script>
-navigator.geolocation.getCurrentPosition(initsuccess,initerror);
+// navigator.geolocation.getCurrentPosition(initsuccess,initerror);
 function initsuccess(){
      map.setView([position.coords.latitude,position.coords.longitude], 17);
+     $("#console").remove();
 }
 function initerror(){
     document.getElementById("console").innerHTML="error initialized";
-
 }
+document.addEventListener('DOMContentLoaded', function () { 
+     document.getElementById("defaultOpen").click();
+});
 L.mapbox.accessToken = 'pk.eyJ1IjoiamNweXVuIiwiYSI6ImNpdXEwdDE3MzAxd3oydnBlcGxidWc4YnoifQ.9ulCGrjVSrgFz4Ou_4jG7w';
     //   var map = L.map('map').fitWorld();
 
@@ -157,7 +233,7 @@ var circle1;
 var circle2;
       </script>
       <script>
-var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Andrew ID: ALL LOWER CASE"><br>'
+var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Enter Your Andrew ID"><br>'
 
 var usersigninbutton='<button class="wowbutton" onClick="signin()">Sign In</button>'
 if (document.getElementById("userID").innerHTML=="NOT SIGNED IN"){
@@ -168,13 +244,44 @@ else{
 }
 var currentUserId=""
 
+
+
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+
+
+
+
+
+
 function signin(){
-     locationFinder();
+    
     currentUserId=document.getElementById('inputName').value.toLowerCase();
     document.getElementById("userID").innerHTML=currentUserId;
-    document.getElementById("bottom").innerHTML='<div class="status"></div>'
+    document.getElementById("bottom").innerHTML='<button class="wowbutton" id="startbutton" onClick="start()">START</button>'
+    document.getElementById("bottom").innerHTML+='<div class="status"></div>'
     // currentUserId=document.getElementById('inputName').value.toLowerCase();
+    
+}
+function start(){
+    $('#startbutton').remove();
+    locationFinder();
+
     ajaxGet();
+
 }
 function ajaxGet(){
     $.ajax({
@@ -183,6 +290,7 @@ function ajaxGet(){
         url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
         success:function(result){
             taskRetriever();
+            locationFinder();
         },
         error:function (xhr, ajaxOptions, thrownError){
             if(xhr.status==404) {
@@ -208,7 +316,7 @@ function signupUser(fromthe){
             });
 }
 function taskRetriever(){
-     window.setInterval(ajaxGetTask, 5000);
+     window.setInterval(ajaxGetTask, 6000);
 }
 function ajaxGetTask(){
     $.ajax({
@@ -216,7 +324,7 @@ function ajaxGetTask(){
         datatype: "json",
         url: "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
         success:function(result){
-            console.log(result,"FUCKINGSHIT");
+            // console.log(result,"FUCKINGSHIT");
             if (result.task=="A"){
                 //this is telling you to go to the org
                 var lat = (result.target_latitude);
