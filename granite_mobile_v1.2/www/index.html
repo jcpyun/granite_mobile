@@ -41,6 +41,7 @@
     <!--<link rel="stylesheet" type="text/css" href="css/index.css" />-->
     <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
 	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <!--<script src="js/opinfo.js"></script>-->
     <link rel="stylesheet" type="text/css" href="css/granite.css" />
     <style>
         @font-face {
@@ -69,7 +70,7 @@
         }
    
     .soflow{
-        height:50px;
+        height:60px;
     }
     .soflow select {
         font-family: "Blender","Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -193,14 +194,14 @@ div.tab button.active {
     /*height:95%;*/
     width:100%;
     float:left;
-    height:80px;
+    /*height:80px;*/
 }
 .gettaskhead{
     color:#333;
     font-weight:bold;
     background-color:#f5f5f5;
     border-color:#aaa;
-    padding:10px 15px;
+    padding:2px 15px;
     border-bottom:1px solid transparent;
     border-top-right-radius:3px;
     border-top-left-radius:3px;
@@ -219,18 +220,30 @@ div.tab button.active {
     font-size:15px;
     color: #aaaaaa;
 	margin-top:50px;
-    /*height:400px;*/
+    /*height:100px;*/
 }
 .getchathead{
     color:#333;
     font-weight:bold;
     background-color:#f5f5f5;
     border-color:#aaa;
-    padding:10px 15px;
+    padding:2px 15px;
     border-bottom:1px solid transparent;
     border-top-right-radius:3px;
     border-top-left-radius:3px;
 }
+textarea{
+  font-family: 'Blender', sans-serif;
+  outline: 0;
+  background: #fff;
+  width: 80%;
+  height:30px;
+  border: 0;
+  border-radius:4px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
 	</style>
 
     <title>Hello World</title>
@@ -239,7 +252,7 @@ div.tab button.active {
 <body>
     
     <div class="app" style="margin-top:20px;">
-        <div style="font-family:'Blender';font-size:30px;height:30px;">v2.3 SCC: <span id="userID">NOT SIGNED IN</span> </div>
+        <div style="font-family:'Blender';font-size:20px;height:20px;">v2.3 SCC: <span id="userID">NOT SIGNED IN</span> </div>
         <div id='map'></div>
         </br>
 
@@ -296,21 +309,33 @@ var target_marker = L.marker(map.getCenter()); //// this is the marker target
 
 map.locate({setView: true, maxZoom: 16});
 
-var userinputfield='<input id="inputName" type="text" name="phone" placeholder="Enter Your Andrew ID">'
-
-var usersigninbutton='<button class="wowbutton" onClick="signin()">Sign In</button>'
+var userinputfield='<input id="inputUser" type="text" name="phone" placeholder="Andrew ID:">'
+var nameinputfield='<input id="inputName" type="text" name="phone" placeholder="Full Name: ex) Andrew Carnegie">'
+var usersigninbutton='<button class="wowbutton" onClick="checkIfFormFilled()">Sign In</button>'
 if (document.getElementById("userID").innerHTML=="NOT SIGNED IN"){
     document.getElementById("bottom").innerHTML=userinputfield+usersigninbutton;
 }
 
 var currentUserId=""
+var currentUserName=""
 
+function checkIfFormFilled(){
+    a=document.getElementById('inputUser').value;
+     if (a=="")
+      {
+      alert("Please Fill All Required Field");
+      }
+      else{
+          signin();
+      }
+}
 
 function signin(){
-    // get location finder here
-      
+    
+    
 
-    currentUserId=document.getElementById('inputName').value.toLowerCase();
+    currentUserId=document.getElementById('inputUser').value.toLowerCase();
+    // currentUserName=document.getElementById('inputName').value;
     checkIfUserRegisteredIfNotRegister()
     
     document.getElementById("userID").innerHTML=currentUserId;
@@ -336,9 +361,11 @@ function checkIfUserRegisteredIfNotRegister(){
                 "url": "http://www.jcpyun.com/api/sccgps/"+currentUserId+"/",
                 "success": function(result) {
                     alert("Login Success!");
+                    console.log(result);
                 },
                 "error": function(error){
                     alert("creatingnew");
+                    alert(currentUserName,currentUserId)
                     signupUser(currentUserId)
                     
 
@@ -396,15 +423,6 @@ function taskRetriever(){
 }
 var circle1;
 var circle2;
-var taskdict={
-    "A":"Go to the Designated Org.",
-    "B":"Hold position and wait for further instructions.",
-    "C":"Proceed to Midway.",
-    "C_a":"Proceed to Midway on FOOT.",
-    "D":"Come to the Midway Trailer",
-    "E":"Radio In",
-    "RED":"Find a safe location and stand by.",
-}
 
 function statusPoster(){
     var commandselector="";
@@ -412,8 +430,20 @@ function statusPoster(){
         commandselector+='<div class="gettaskhead">'
         commandselector+='Your Task'
         commandselector+='</div>'
-        commandselector+='<div id="taskreceived"></div>'
-        commandselector+='<div id="orgreceived"></div>'
+
+        commandselector+='<table style="width:100%">'
+        commandselector+='<colgroup>'
+        commandselector+='<col style="width:30%">'
+        commandselector+='<col style="width:70%">'
+        commandselector+='</colgroup>'
+
+        commandselector+='<tr><td>Task: </td><td><span id="taskreceived"></span></br></td></tr>';
+        commandselector+='<tr><td>Org: </td><td><span id="orgreceived"></span></br></td></tr>';
+        commandselector+='<tr><td>Your Status: </td><td><span id="yourstatus"></span></br></td></tr>';
+        // commandselector+='<div id="taskreceived"></div>'
+        // commandselector+='<div id="orgreceived"></div>'
+        // commandselector+='<div id="yourstatus"></div>'
+        commandselector+='</table>'
     commandselector+='</div>'
 
 
@@ -427,6 +457,7 @@ function statusPoster(){
     commandselector+=   "<option  value='C_b'>Proceeding to Midway - VEHICLE</option>";
     commandselector+=   "<option  value='D'>Proceeding to the Trailer</option>";
     commandselector+=   "<option  value='E'>Radioing in</option>";
+    commandselector+=   "<option  value='GG'>MOVE ON COMPLETE!</option>";
     commandselector+=   "<option  value='RED'>EMERGENCY</option>";
     commandselector+=   "</select>";
     commandselector+=   '<button class="statusbutton" onClick="reportstatus()">Submit</button>'
@@ -439,10 +470,10 @@ function statusPoster(){
      commandselector+=    '<div class="getchathead">'
     commandselector+=        'Messages'
     commandselector+=    '</div>'
-     commandselector+=    '<div id="incomingchat" style="background-color:#eee;overflow:scroll;"></div>'
+     commandselector+=    '<div id="incomingchat" style="background-color:#eee;overflow:scroll;height:100px;"></div>'
      commandselector+=    '<div id="outgoingchat"></div>'
-     commandselector+=    '<textarea cols="40" id="id_message" maxlength="1000" name="message" rows="2"></textarea>'
-    commandselector+=    '<button class="sendbutton" id= "chatbuttonsubmit"  type="submit">SEND</button>'
+     commandselector+=    '<textarea cols="40" id="id_message" maxlength="1000" name="message" rows="2" placeholder="Enter your message..."></textarea>'
+    commandselector+=    '<button class="sendbutton" id= "chatbuttonsubmit" onClick="ajaxChatPost()">SEND</button>'
      commandselector+='</div>'    
      commandselector+='<div id="statussubmitresult"></div>'
     $("#statusid").append(commandselector);
@@ -481,9 +512,27 @@ function ajaxUpdateCoordPinOnMapAndGetTask(){
                     circle2.setLatLng([userlat,userlng]);
                 }
             //    document.getElementById("taskreceived").innerhtml=taskdict[result.task]+result.org
-            document.getElementById("taskreceived").innerHTML=taskdict[result.task]+'</br>'+result.org;
+            document.getElementById("taskreceived").innerHTML=result.task
+            document.getElementById("orgreceived").innerHTML=result.org
+            document.getElementById("yourstatus").innerHTML=result.status;
             //    console.log("shit",taskdict[result.task]+result.org)
 
+            if (result.task=="Proceed to Midway" || result.task=="Proceed to Midway - FOOT"||result.task=="Proceed to Midway - VEHICLE"){
+                console.log("map");
+                if (result.path!=null){
+                var localpath=result.path.split(",");
+                var newpath = [];
+                while(localpath.length) newpath.push(localpath.splice(0,2));
+                console.log(newpath);
+                 var pathpolyline = new L.Polyline(newpath, {
+                    color: 'red',
+                    weight: 5,
+                    opacity: 1,
+                    smoothFactor: 1
+                });
+                pathpolyline.addTo(map);
+                }
+            }    
             },
             "error":function (xhr, ajaxOptions, thrownError){
                 if(xhr.status==404) {
@@ -509,14 +558,19 @@ function ajaxChatGet(){
                     if (result[i].user=="Dispatch"){
                     output += "<span style='color:#F00;'>"+result[i].user+":"+"</span>" +"&nbsp&nbsp&nbsp(" +result[i].created.substring(11,result[i].created.length-8) +")</br>"
                     }
-                    else{
-                    output += "<span style='color:#000;'>"+result[i].user+":"+"</span>" +"&nbsp&nbsp&nbsp("+result[i].created.substring(11,result[i].created.length-8)+")</br>"    
+                    if (result[i].user=="Police"){
+                    output += "<span style='color:#00f;'>"+result[i].user+":"+"</span>" +"&nbsp&nbsp&nbsp(" +result[i].created.substring(11,result[i].created.length-8) +")</br>"
+                    }
+                    if (result[i].user==currentUserId){
+                    output += "<span style='color:#4CAF50;'>"+result[i].user+":"+"</span>" +"&nbsp&nbsp&nbsp("+result[i].created.substring(11,result[i].created.length-8)+")</br>"    
                     }
                     output+="<span style='color:#000;'> "+"&nbsp&nbsp&nbsp"+result[i].message+"</span>" +  "</br>";
                     // output+=+"</br>"
                 }
             
                     document.getElementById("incomingchat").innerHTML=output;
+                    var element = document.getElementById("incomingchat");
+                    element.scrollTop = element.scrollHeight;
                 numberOfMessages=result.length;
             }
             else{
@@ -534,6 +588,22 @@ function ajaxChatGet(){
 }
 
 
+function ajaxChatPost(message){
+    console.log(currentUserId)
+    var data={
+        'user':currentUserId,
+        "message":$("#id_message").val()
+    }
+     $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": "http://www.jcpyun.com/api/chat/create/",
+                "data": data,
+                "success": function(result) {
+                    document.getElementById('id_message').value="";
+                },
+            });
+}
 
 </script>
 
